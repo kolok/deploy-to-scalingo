@@ -1,0 +1,32 @@
+name: "Deploy on Scalingo"
+description: "install ssh private key from github secret, add scalingo ssh host to known_hosts, and deploy to scalingo"
+inputs:
+  ssh-private-key:
+    description: "ssh private key to install to .ssh"
+    required: true
+  app-name:
+    description: "application name used to build git repository url"
+    required: true
+  known-host:
+    description: "host to add to known_hosts file"
+    required: true
+    default: ssh.osc-fr1.scalingo.com
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install ssh private key
+      run: |
+        mkdir -p /home/runner/.ssh
+        echo "${{ inputs.ssh-private-key }}" > /home/runner/.ssh/id_rsa
+        chmod 600 /home/runner/.ssh/id_rsa
+        ssh-keyscan ${{ inputs.known-host }} >> /home/runner/.ssh/known_hosts
+        cat /home/runner/.ssh/known_hosts
+      shell: bash
+    - name: Deploy to Scalingo
+      run: |
+        git config --add --local core.sshCommand 'ssh -i /home/runner/.ssh/id_rsa'
+        git remote add production git@${{ inputs.known-host }}:${{ inputs.app-name }}.git
+        git fetch --unshallow
+        git push --force production HEAD:master
+      shell: bash

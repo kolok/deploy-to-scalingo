@@ -30,3 +30,6 @@ runs:
         git fetch --unshallow
         git push --force production HEAD:master
       shell: bash
+branding:
+  icon: "arrow-up-circle"
+  color: "orange"

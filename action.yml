@@ -29,6 +29,10 @@ runs:
         git remote add production git@${{ inputs.known-host }}:${{ inputs.app-name }}.git
         git fetch --unshallow
         git push --force production HEAD:master
+        if [ "$(git rev-parse production/master)" != "$(git rev-parse HEAD)" ]; then
+          echo "Failed to push to Scalingo"
+          exit 1
+        fi
       shell: bash
 branding:
   icon: "arrow-up-circle"

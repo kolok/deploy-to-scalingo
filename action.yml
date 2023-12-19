@@ -27,8 +27,16 @@ runs:
       run: |
         git config --add --local core.sshCommand 'ssh -i /home/runner/.ssh/id_rsa'
         git remote add production git@${{ inputs.known-host }}:${{ inputs.app-name }}.git
-        git fetch --unshallow
+        git fetch --unshallow -ap
+        git rev-parse production/master
+        git rev-parse HEAD
         git push --force production HEAD:master
+        git rev-parse production/master
+        git rev-parse HEAD
+        if [ "$(git rev-parse production/master)" != "$(git rev-parse HEAD)" ]; then
+          echo "Failed to push to Scalingo"
+          exit 1
+        fi
       shell: bash
 branding:
   icon: "arrow-up-circle"
